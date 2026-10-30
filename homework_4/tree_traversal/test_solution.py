@@ -1,6 +1,14 @@
 import pytest
 
-from solution import BST, build
+from solution import BST
+
+
+def build(values: list[int]) -> BST:
+    # helper живет в тестах, решение хранит только TreeNode и BST
+    tree = BST()
+    for val in values:
+        tree.insert(val)
+    return tree
 
 
 def collect_all(tree: BST) -> dict[str, list[int]]:

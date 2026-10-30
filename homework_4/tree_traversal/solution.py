@@ -12,10 +12,12 @@
 # Сложность памяти: O(n) под результат плюс O(h) под стек рекурсии, где h высота.
 # Обоснование: каждый узел посещается один раз. Глубина рекурсии равна высоте
 # дерева. Вставка стоит O(h) сравнений от корня до листа.
+# Качество: сбалансированное дерево держит h около логарифма, скошенное дает h равное n.
 
 
 class TreeNode:
     def __init__(self, val: int):
+        # класс продублирован между папками для самодостаточности ссылок Stepik
         self.val = val
         self.left: "TreeNode | None" = None
         self.right: "TreeNode | None" = None
@@ -135,16 +137,10 @@ class BST:
         out.append(node.val)
 
 
-def build(values: list[int]) -> BST:
-    # строит дерево последовательной вставкой значений
-    tree = BST()
-    for val in values:
-        tree.insert(val)
-    return tree
-
-
 if __name__ == "__main__":
-    demo = build([5, 3, 7, 2, 4, 6, 8])
+    demo = BST()
+    for val in [5, 3, 7, 2, 4, 6, 8]:
+        demo.insert(val)
     print(demo.preorder())
     print(demo.inorder())
     print(demo.postorder())
