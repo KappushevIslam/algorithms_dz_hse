@@ -4,11 +4,26 @@ from solution import AVL
 
 
 def build(values: list[int]) -> AVL:
-    # строит дерево последовательной вставкой значений
+    # helper живет в тестах, решение хранит только Node и AVL
     tree = AVL()
     for value in values:
         tree.insert(value)
     return tree
+
+
+def inorder(tree: AVL) -> list[int]:
+    # обход левое, узел, правое дает отсортированные ключи
+    result: list[int] = []
+
+    def walk(node) -> None:
+        if node is None:
+            return
+        walk(node.left)
+        result.append(node.key)
+        walk(node.right)
+
+    walk(tree.root)
+    return result
 
 
 def check_balanced(tree: AVL) -> bool:
@@ -45,42 +60,42 @@ def test_single_insert_search_delete():
     assert tree.search(7) is True
     tree.delete(7)
     assert tree.search(7) is False
-    assert tree.inorder() == []
+    assert inorder(tree) == []
 
 
 def test_left_rotation_balances():
     tree = build([10, 20, 30])
     assert tree.root is not None and tree.root.key == 20
-    assert tree.inorder() == [10, 20, 30]
+    assert inorder(tree) == [10, 20, 30]
 
 
 def test_right_rotation_balances():
     tree = build([30, 20, 10])
     assert tree.root is not None and tree.root.key == 20
-    assert tree.inorder() == [10, 20, 30]
+    assert inorder(tree) == [10, 20, 30]
 
 
 def test_inorder_sorted():
     tree = build([8, 3, 10, 1, 6, 14, 4, 7, 13])
-    assert tree.inorder() == [1, 3, 4, 6, 7, 8, 10, 13, 14]
+    assert inorder(tree) == [1, 3, 4, 6, 7, 8, 10, 13, 14]
 
 
 def test_duplicate_ignored():
     tree = build([5, 3, 7, 3, 5])
-    assert tree.inorder() == [3, 5, 7]
+    assert inorder(tree) == [3, 5, 7]
 
 
 def test_delete_leaf_and_missing():
     tree = build([10, 20, 30])
     tree.delete(10)
     tree.delete(99)
-    assert tree.inorder() == [20, 30]
+    assert inorder(tree) == [20, 30]
     assert check_balanced(tree) is True
 
 
 def test_delete_root_with_two_children():
     tree = build([10, 20, 30])
     tree.delete(20)
-    assert tree.inorder() == [10, 30]
+    assert inorder(tree) == [10, 30]
     assert tree.search(20) is False
     assert check_balanced(tree) is True
