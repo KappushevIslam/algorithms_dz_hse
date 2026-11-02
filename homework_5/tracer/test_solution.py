@@ -89,10 +89,3 @@ def test_kwargs_shown_in_call_line(capsys):
     out = capsys.readouterr().out
     assert "call add(2, b=3)" in out
     assert "return add(2, b=3) = 5" in out
-
-
-def test_trace_log_matches_stdout(capsys):
-    fact = make_fact()
-    fact(2)
-    out = capsys.readouterr().out.splitlines()
-    assert fact.trace_log == out

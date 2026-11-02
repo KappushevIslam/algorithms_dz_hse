@@ -4,14 +4,14 @@
 увеличивает глубину и вызывает исходную функцию. Шаг 3 уменьшает глубину
 и печатает строку возврата с результатом и тем же отступом.
 
-Структуры. Замыкание хранит счетчик глубины и список строк trace_log.
-Счетчик задает отступ из двух пробелов на уровень. Список сохраняет
-копию каждой напечатанной строки для проверок.
+Структуры. Замыкание хранит счетчик глубины. Счетчик задает отступ
+из двух пробелов на уровень. Отступ выбран для читаемости вывода.
 """
 # Сложность времени: O(d) на один вызов для форматирования аргументов, где d число аргументов.
-# Сложность памяти: O(d) под счетчик глубины и O(t) под накопленный журнал из t строк.
+# Сложность памяти: O(1) под счетчик глубины, вывод уходит в stdout.
 # Обоснование: обертка выполняет постоянное число операций плюс печать одной строки
 # на вход и одной на выход. Глубина рекурсии равна глубине стека исходной функции.
+# Качество: накладные расходы не зависят от глубины, счетчик живет в замыкании.
 from __future__ import annotations
 
 import functools
@@ -28,8 +28,6 @@ def _format_args(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
 def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
     # depth хранит текущую глубину вложенных вызовов
     depth = 0
-    # log хранит копию каждой строки для тестов и ручного разбора
-    log: list[str] = []
 
     @functools.wraps(fn)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -38,9 +36,7 @@ def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
         arg_str = _format_args(args, kwargs)
         # pad отражает глубину: два пробела на уровень
         pad = "  " * depth
-        entry = f"{pad}call {fn.__name__}({arg_str})"
-        print(entry)
-        log.append(entry)
+        print(f"{pad}call {fn.__name__}({arg_str})")
         # глубина растет до рекурсивного спуска
         depth += 1
         try:
@@ -48,19 +44,13 @@ def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
         except Exception as exc:
             # глубина уменьшается до печати, строка ошибки держит исходный отступ
             depth -= 1
-            failure = f"{pad}raise {fn.__name__}({arg_str}) {exc!r}"
-            print(failure)
-            log.append(failure)
+            print(f"{pad}raise {fn.__name__}({arg_str}) {exc!r}")
             raise
         # глубина уменьшается после возврата из вложенных вызовов
         depth -= 1
-        done = f"{pad}return {fn.__name__}({arg_str}) = {result!r}"
-        print(done)
-        log.append(done)
+        print(f"{pad}return {fn.__name__}({arg_str}) = {result!r}")
         return result
 
-    # trace_log дает доступ к журналу без перехвата stdout
-    wrapper.trace_log = log  # type: ignore[attr-defined]
     return wrapper
 
 

@@ -32,8 +32,6 @@ def _format_args(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
 def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
     # depth хранит текущую глубину вложенных вызовов
     depth = 0
-    # log хранит копию каждой строки для тестов и ручного разбора
-    log: list[str] = []
 
     @functools.wraps(fn)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -42,9 +40,7 @@ def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
         arg_str = _format_args(args, kwargs)
         # pad отражает глубину: два пробела на уровень
         pad = "  " * depth
-        entry = f"{pad}call {fn.__name__}({arg_str})"
-        print(entry)
-        log.append(entry)
+        print(f"{pad}call {fn.__name__}({arg_str})")
         # глубина растет до рекурсивного спуска
         depth += 1
         try:
@@ -52,19 +48,13 @@ def tracer(fn: Callable[..., Any]) -> Callable[..., Any]:
         except Exception as exc:
             # глубина уменьшается до печати, строка ошибки держит исходный отступ
             depth -= 1
-            failure = f"{pad}raise {fn.__name__}({arg_str}) {exc!r}"
-            print(failure)
-            log.append(failure)
+            print(f"{pad}raise {fn.__name__}({arg_str}) {exc!r}")
             raise
         # глубина уменьшается после возврата из вложенных вызовов
         depth -= 1
-        done = f"{pad}return {fn.__name__}({arg_str}) = {result!r}"
-        print(done)
-        log.append(done)
+        print(f"{pad}return {fn.__name__}({arg_str}) = {result!r}")
         return result
 
-    # trace_log дает доступ к журналу без перехвата stdout
-    wrapper.trace_log = log  # type: ignore[attr-defined]
     return wrapper
 
 
